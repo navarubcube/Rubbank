@@ -15,12 +15,14 @@ A estrutura do projeto está organizado da seguinte maneira:
 
 ```
 rubcamp
-│   README.md
+│   README.md - Instruções de como rodar o projeto
 │   .env - Iremos guardar as variáveis de ambiente aqui
 │   .dockerignore - Arquivos que serão ignorados pelo Docker
 │   .gitignore - Arquivos ignorados pelo Git
 │   docker-compose.yml - Arquivo de configuração do Docker Compose
-│   Dockerfile - Configurações da Imagem Docker
+│   Dockerfile - Configurações da Imagem Docker de produção
+│   Dockerfile.dev - Configurações da Imagem Docker de desenvolvimento
+│   heroku.yml - Configurações da Imagem Docker do Heroku
 │   Makefile - Arquivo pra simplificar os comandos digitados
 │   package.json - Arquivo de configuração de dependências do projeto
 │   tsconfig.json - Arquivo de configuração do Typescript
