@@ -2,10 +2,7 @@
 
 Para rodar o projeto, siga os passos:
 
-1. No terminal, rode os comandos abaixo na sequência:
-2. `make up-build`
-3. `yarn prisma migrate dev`
-4. `yarn dev`
+1. No terminal, rode o comando: `make up-build`
 
 Para Instalar o Make:
 
