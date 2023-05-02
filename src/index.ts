@@ -10,7 +10,7 @@ const app = express();
 
 app.use(express.json());
 app.get("/", (req, res) => {
-  return res.send("Hello takaki");
+  return res.send("Hello World");
 });
 app.use("/users", authentication, usersRoutes);
 app.listen(process.env.PORT || 3344);
