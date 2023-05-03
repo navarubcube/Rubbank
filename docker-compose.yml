@@ -19,6 +19,7 @@ services:
   web:
     container_name: web
     build:
+      context: .
       dockerfile: Dockerfile.dev
     command: yarn dev
     volumes:
