@@ -1,44 +1,96 @@
 import { PrismaClient } from '@prisma/client';
-import { UserIn } from 'dtos/UsersDTO';
+import { UserIn, UserOut, UserStatusDTO } from 'dtos/UsersDTO';
+import { Request, Response } from "express";
 
-const prisma = new PrismaClient();
+export const prisma = new PrismaClient();
 
 export default class UserModel {
 
-  create = async (user: UserIn) => {
-    return await prisma.user.create({
-      data: user
-    });
-  }
 
+  get = async (id: string) => {
+    const user = await prisma.usuario.findUnique({ where: { id } });
+  
+    if (user) {
+      const userOut: UserOut = {
+        id: user.id,
+        nome_completo: user.nome_completo,
+        email: user.email,
+        cpf: user.cpf,
+        data_nascimento: user.data_nascimento,
+        created_at: user.created_at,
+        updated_at: user.updated_at,
+        status: user.status as UserStatusDTO,
+        telefone: user.telefone,
+        tentativas_login: user.tentativas_login,
+      };
+      
+      return userOut;
+    } else {
+      return null;
+    }
+  };
+  
   getAll = async () => {
-    return await prisma.user.findMany();
+    const users = await prisma.usuario.findMany(); 
+  
+    return users.map(user => ({
+      id: user.id,
+      nome_completo: user.nome_completo,
+      email: user.email,
+      cpf: user.cpf,
+      data_nascimento: user.data_nascimento,
+      created_at: user.created_at,
+      updated_at: user.updated_at,
+      status: user.status as UserStatusDTO,
+      telefone: user.telefone,
+      tentativas_login: user.tentativas_login,
+    }));
   }
+  
 
-  get = async (id: number) => {
-    return await prisma.user.findUnique({
-      where: {
-        id
-      }
+  delete = async (id: string) => {
+    const user = await prisma.usuario.delete({
+      where: { id: id },
     });
+
+    return user;
   }
 
-  delete = async (id: number) => {
-    return await prisma.user.delete({
+  update = async (id: string, user: UserIn) => {
+    return await prisma.usuario.update({ 
       where: {
-        id
-      }
-    })
-  }
-
-  update = async (id: number, user: UserIn) => {
-    return await prisma.user.update({
-      where: {
-        id
+        id: id
       },
       data: {
         ...user
       }
     })
   }
+
+  findByCPF = async (cpf: string) => {
+    return await prisma.usuario.findUnique({ 
+      where: {
+        cpf
+      }
+    });
+  }
+
+  findByEmail = async (email: string) => {
+    return await prisma.usuario.findFirst({
+      where: {
+        OR: [
+          { email },
+        ]
+      }
+    });
+  }
+
+  findByPhone = async (telefone: string) => {
+    return await prisma.usuario.findFirst({ 
+      where: {
+        telefone
+      }
+    });
+  };
+  
 };

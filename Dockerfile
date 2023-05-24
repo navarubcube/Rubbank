@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 node:17
+FROM --platform=linux/amd64 node:18-slim
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -7,7 +7,7 @@ WORKDIR /usr/src/app
 COPY . .
 
 # COPY .env
-COPY .env.docker.example .env
+# COPY .env.docker.example .env
 
 # Install app dependencies
 RUN yarn install

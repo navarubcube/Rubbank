@@ -21,6 +21,6 @@
       "services/*": ["services/*"]
     }
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "database/**/*"],
   "exclude": ["node_modules"]
 }

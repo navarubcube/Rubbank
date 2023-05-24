@@ -1,0 +1,87 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Usuario {
+  id              Int         @id @default(autoincrement())
+  nome_completo   String
+  email           String      @unique
+  cpf             String      @unique
+  data_nascimento DateTime
+  created_at      DateTime
+  updated_at      DateTime
+  enderecos       Endereco[]
+  autenticacoes   Autenticacao[]
+  contas          Conta[]
+}
+
+model Endereco {
+  id          Int       @id @default(autoincrement())
+  usuario_id  Int
+  cep         String
+  endereco    String
+  numero      String
+  complemento String?   
+  bairro      String
+  cidade      String
+  uf          String
+  created_at  DateTime
+  updated_at  DateTime
+  usuario     Usuario   @relation(fields: [usuario_id], references: [id])
+}
+
+model Autenticacao {
+  id                Int       @id @default(autoincrement())
+  usuario_id        Int
+  senha             String
+  senha_transacoes  String
+  resetSenhaToken   String?   @unique
+  resetSenhaExpira  DateTime?
+  created_at        DateTime
+  updated_at        DateTime
+  usuario           Usuario   @relation(fields: [usuario_id], references: [id])
+}
+
+model Conta {
+  id            Int          @id @default(autoincrement())
+  usuario_id    Int
+  agencia       String
+  numero_conta  String
+  tipo          ContaTipo
+  saldo         Float
+  created_at    DateTime
+  updated_at    DateTime
+  usuario       Usuario      @relation(fields: [usuario_id], references: [id])
+  transacoesOrigem    Transacao[] @relation("TransacaoContaOrigem")
+  transacoesDestino   Transacao[] @relation("TransacaoContaDestino")
+}
+
+model Transacao {
+  id                Int           @id @default(autoincrement())
+  conta_origem_id   Int
+  conta_destino_id  Int
+  data              DateTime
+  valor             Float
+  descricao         String
+  tipo              TransacaoTipo
+  created_at        DateTime
+  updated_at        DateTime
+  conta_origem      Conta         @relation("TransacaoContaOrigem", fields: [conta_origem_id], references: [id])
+  conta_destino     Conta         @relation("TransacaoContaDestino", fields: [conta_destino_id], references: [id])
+}
+
+enum ContaTipo {
+  CORRENTE
+  POUPANCA
+}
+
+enum TransacaoTipo {
+  DEPOSITO
+  SAQUE
+  TRANSFERENCIA
+}

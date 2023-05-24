@@ -1,14 +1,36 @@
+import { EnderecoIn } from "./EnderecoDTO";
+
+// Defina este enum no seu arquivo DTO
+export enum UserStatusDTO {
+  ATIVO = 'ATIVO',
+  INATIVO = 'INATIVO',
+  SUSPENSO = 'SUSPENSO'
+}
+
 export interface UserIn {
-  full_name: string;
+  nome_completo: string;
   email: string;
-  phone: string;
   cpf: string;
+  data_nascimento: Date;
+  created_at: Date;
+  updated_at: Date;
+  status: UserStatusDTO; 
+  telefone: string;
+  tentativas_login: number;
   password: string;
-  transaction_password: string;
 }
 
 export interface UserOut {
-  id: number;
+  id: string;
+  nome_completo: string;
   email: string;
-  full_name: string | null;
+  cpf: string;
+  data_nascimento: Date;
+  created_at: Date;
+  updated_at: Date;
+  status: UserStatusDTO; 
+  telefone: string;
+  tentativas_login: number;
 }
+
+
