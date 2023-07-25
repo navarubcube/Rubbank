@@ -15,6 +15,7 @@ routes.delete('/', authentication, userController.delete);
 routes.post('/login', userController.login);
 routes.post('/reactivate/:identifier', userController.initiateReactivation);
 routes.post('/completeReactivation', userController.completeReactivation);
+routes.post('/onboarding', userController.checkOnboarding);
 // routes.get('/', authentication, userController.getAll);
 // routes.put('/:id', authentication, userController.update);
 

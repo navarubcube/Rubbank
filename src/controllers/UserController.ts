@@ -1,3 +1,5 @@
+// src/controllers/UserController.ts
+
 import bcrypt from 'bcrypt';
 import { Request, Response } from "express";
 import { UserIn, UserOut, UserStatusDTO } from "dtos/UsersDTO";
@@ -9,6 +11,8 @@ import crypto from 'crypto';
 const userModel = new UserModel();
 
 export default class UserController {
+
+  
 
   constructor() {
     this.prisma = new PrismaClient();
@@ -216,6 +220,98 @@ export default class UserController {
   findByCPF = async (cpf: string) => {
     return await userModel.findByCPF(cpf);
   };
+
+  checkOnboarding = async (req: Request, res: Response) => {
+      try {
+          const identifier: string = req.body.identifier;
+
+          function isValidCPF(cpf: string): boolean {
+            if (cpf.length !== 11) {
+              return false;
+            }
+            
+            let sum, rest;
+            sum = 0;
+            
+            // validation of the first digit
+            for (let i=1; i<=9; i++) {
+              sum = sum + parseInt(cpf.substring(i-1, i)) * (11 - i);
+            }
+            
+            rest = (sum * 10) % 11;
+            if ((rest === 10) || (rest === 11)) {
+              rest = 0;
+            }
+            
+            if (rest !== parseInt(cpf.substring(9, 10))) {
+              return false;
+            }
+            
+            sum = 0;
+            
+            // validation of the second digit
+            for (let i = 1; i <= 10; i++) {
+              sum = sum + parseInt(cpf.substring(i-1, i)) * (12 - i);
+            }
+            
+            rest = (sum * 10) % 11;
+            if ((rest === 10) || (rest === 11)) {
+              rest = 0;
+            }
+            
+            if (rest !== parseInt(cpf.substring(10, 11))) {
+              return false;
+            }
+            
+            return true;
+          }
+
+          if (!identifier) {
+              return res.status(400).json({
+                  error: "USR-08",
+                  message: "Parâmetro de identificador inválido. Esperado um valor de string."
+              });
+          }
+
+          // Verificar se o identifier é um e-mail, um CPF ou um telefone
+          const isEmail = /\S+@\S+\.\S+/.test(identifier);
+          const isCPF = isValidCPF(identifier);
+          const isPhone = (identifier);
+
+          let user = null;
+
+          if (isEmail) {
+              user = await userModel.findByEmail(identifier);
+          } else if (isCPF) {
+              user = await userModel.findByCPF(identifier);
+          } else if (isPhone) {
+            user = await userModel.findByPhone(identifier);
+          } else {
+              return res.status(400).json({
+                  message: "Identificador inválido. Deve ser um e-mail, um CPF ou um telefone."
+              });
+          }
+
+          if (user) {
+              res.status(200).json({
+                  exists: true,
+                  message: "Usuário encontrado"
+              });
+          } else {
+              res.status(404).json({
+                  exists: false,
+                  message: "Usuário não encontrado"
+              });
+          }
+      } catch (e) {
+          console.log("Falha ao verificar onboarding", e);
+          res.status(500).send({
+              error: "USR-12",
+              message: "Falha ao verificar onboarding"
+          });
+      }
+  }
+
 
   login = async (req: Request, res: Response) => {
     try {

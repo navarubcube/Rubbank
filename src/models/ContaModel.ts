@@ -2,6 +2,7 @@
 
 import { PrismaClient, Conta, Usuario, Transacao, Prisma } from '@prisma/client';
 
+
 const prisma = new PrismaClient();
 
 export default class ContaModel {
@@ -138,30 +139,52 @@ export default class ContaModel {
     return accountDetails;
   };
 
-  async updateUserDetails(userId: string, userDetails: any): Promise<Usuario | null> {
-    const { endereco, ...rest } = userDetails;
-  
-    await prisma.endereco.update({
-      where: { usuario_id: userId },
-      data: endereco,
-    });
-  
-    const updatedUser = await prisma.usuario.update({
+  updatePersonalData = async (userId: string, nome_completo: string, email: string, telefone: string, cpf: string, data_nascimento: Date) => {
+    try {
+      await prisma.usuario.update({
+        where: { id: userId },
+        data: { nome_completo: nome_completo, email: email, telefone: telefone, cpf: cpf, data_nascimento: new Date(data_nascimento) },
+      });
+      return ;
+    } catch (error) {
+      console.log("Erro ao atualizar os dados do usuário: ", error);
+    }
+  };  
+
+  updatePassword = async (userId: string, password: string) => {
+    await prisma.usuario.update({
       where: { id: userId },
-      data: rest,
+      data: { password },
+    });
+  };
+
+  updateTransactionPassword = async (userId: string, transactionPassword: string) => {
+    const conta = await this.getContaByUsuarioId(userId);
+    if (conta) {
+      await prisma.conta.update({
+        where: { id: conta.id },
+        data: { transactionPassword },
+      });
+    }
+  };
+
+  async getPasswordByUserId(userId: string): Promise<string | null> {
+    const user = await prisma.usuario.findUnique({
+      where: { id: userId },
+      select: { password: true }
     });
   
-    return updatedUser;
-  }
-  
-  async updateTransactionPassword(userId: string, transactionPassword: string): Promise<Conta | null> {
-    const updatedConta = await prisma.conta.update({
+    return user?.password || null;
+  };
+
+  async getTransactionPasswordByUserId(userId: string): Promise<string | null> {
+    const conta = await prisma.conta.findUnique({
       where: { usuario_id: userId },
-      data: { transactionPassword },
+      select: { transactionPassword: true },
     });
-    return updatedConta;
-  }
   
-  
+    return conta?.transactionPassword || null;
+  };
+
 }
 

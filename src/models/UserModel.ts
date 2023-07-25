@@ -92,5 +92,7 @@ export default class UserModel {
       }
     });
   };
+
+  
   
 };

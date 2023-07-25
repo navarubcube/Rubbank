@@ -4,55 +4,12 @@ import { Request, Response } from "express";
 import { ContaIn, ContaOut } from "dtos/ContaDTO";
 import ContaModel from "models/ContaModel";
 import { ContaStatus } from "@prisma/client";
-
+import bcrypt from 'bcrypt';
 
 const contaModel = new ContaModel();
+const saltRounds = 10;
 
 export default class ContaController {
-
-  update = async (req: Request, res: Response) => {
-    try {
-      const userId = req.userId;
-      const { nome_completo, data_nascimento, endereco, password, transactionPassword } = req.body;
-  
-      if (!userId) {
-        return res.status(400).json({ error: "Usuário não autenticado" });
-      }
-  
-      // Converte a data de nascimento para um objeto Date
-      const dataNascimentoDate = new Date(data_nascimento);
-  
-      const updatedUser = await contaModel.updateUserDetails(userId, { nome_completo, data_nascimento: dataNascimentoDate, endereco, password });
-  
-      // Atualiza a senha de transação
-      if (transactionPassword) {
-        await contaModel.updateTransactionPassword(userId, transactionPassword);
-      }
-  
-      return res.json(updatedUser);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ error: "Erro ao atualizar detalhes do usuário" });
-    }
-  };  
-
-  updateTransactionPassword = async (req: Request, res: Response) => {
-    try {
-      const userId = req.userId;
-      const { transactionPassword } = req.body;
-  
-      if (!userId) {
-        return res.status(400).json({ error: "Usuário não autenticado" });
-      }
-  
-      const updatedUser = await contaModel.updateTransactionPassword(userId, transactionPassword);
-  
-      return res.json(updatedUser);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ error: "Erro ao atualizar senha de transação" });
-    }
-  };
 
   getDetails = async (req: Request, res: Response) => {
     try {
@@ -193,4 +150,91 @@ export default class ContaController {
         return res.status(500).json({ error: 'Erro ao verificar a existência da conta' });
       }
   };
+
+  updatePersonalData = async (req: Request, res: Response) => {
+    try {
+      const userId = req.userId;
+      const { nome_completo, email, telefone, cpf, data_nascimento } = req.body.user;
+  
+      if (!userId) {
+        return res.status(400).json({ error: "Usuário não autenticado" });
+      }
+  
+      const existingUserEmail = await contaModel.getUserIdByEmail(email);
+      if (existingUserEmail && existingUserEmail !== userId) {
+        return res.status(400).json({ error: "Email já está em uso" });
+      }
+  
+      const existingUserPhone = await contaModel.getUserIdByPhoneNumber(telefone);
+      if (existingUserPhone && existingUserPhone !== userId) {
+        return res.status(400).json({ error: "Telefone já está em uso" });
+      }
+  
+      const existingUserCPF = await contaModel.getUserIdByCPF(cpf);
+      if (existingUserCPF && existingUserCPF !== userId) {
+        return res.status(400).json({ error: "CPF já está em uso" });
+      }
+  
+      await contaModel.updatePersonalData(userId, nome_completo, email, telefone, cpf, data_nascimento);
+  
+      return res.json({ message: "Dados pessoais atualizados com sucesso" });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao atualizar dados pessoais" });
+    }
+  };  
+
+  updatePassword = async (req: Request, res: Response) => {
+    try {
+      const userId = req.userId;
+      const { old_password, new_password } = req.body;
+  
+      if (!userId) {
+        return res.status(400).json({ error: "Usuário não autenticado" });
+      }
+  
+      const currentPassword = await contaModel.getPasswordByUserId(userId);
+      if (!currentPassword) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+  
+      if (!bcrypt.compareSync(old_password, currentPassword)) {
+        return res.status(401).json({ error: "Senha antiga não corresponde" });
+      }
+  
+      const hashedPassword = bcrypt.hashSync(new_password, saltRounds);
+      await contaModel.updatePassword(userId, hashedPassword);
+  
+      return res.json({ message: "Senha atualizada com sucesso" });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao atualizar senha" });
+    }
+  };
+  
+  updateTransactionPassword = async (req: Request, res: Response) => {
+    try {
+      const userId = req.userId;
+      const { old_transaction_password, new_transaction_password } = req.body;
+  
+      if (!userId) {
+        return res.status(400).json({ error: "Usuário não autenticado" });
+      }
+  
+      const currentTransactionPassword = await contaModel.getTransactionPasswordByUserId(userId);
+      if (!currentTransactionPassword) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+  
+      if (!bcrypt.compareSync(old_transaction_password, currentTransactionPassword)) {
+        return res.status(401).json({ error: "Senha de transação antiga não corresponde" });
+      }
+  
+      const hashedTransactionPassword = bcrypt.hashSync(new_transaction_password, saltRounds);
+      await contaModel.updateTransactionPassword(userId, hashedTransactionPassword);
+  
+      return res.json({ message: "Senha de transação atualizada com sucesso" });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao atualizar senha de transação" });
+    }
+  };
+
 }

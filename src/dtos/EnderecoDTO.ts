@@ -1,3 +1,5 @@
+// src/routes/index.ts
+
 export interface EnderecoIn {
   cep: string;
   endereco: string;

@@ -1,0 +1,3 @@
+interface CreateNewsletterDto {
+    email: string;
+  }

@@ -13,6 +13,7 @@ const contaModel = new ContaModel();
 const transacaoModel = new TransacaoModel();
 
 
+
 class TransacaoController {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
@@ -131,10 +132,10 @@ class TransacaoController {
       const params = {
         startDate: req.query.startDate as string,
         endDate: req.query.endDate as string,
-        order: req.query.order as 'asc' | 'desc',
+        order: req.query.order as 'desc' | 'asc',
         mode: req.query.mode as 'ENVIADO' | 'RECEBIDO',
         page: parseInt(req.query.page as string) || 1, // Página atual, padrão: 1
-        limit: parseInt(req.query.limit as string) || 10, // Resultados por página, padrão: 10
+        limit: parseInt(req.query.limit as string) || 15, // Resultados por página, padrão: 10
       };
 
 

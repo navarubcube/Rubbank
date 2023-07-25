@@ -59,7 +59,7 @@ model Usuario {
   password          String?      
   tentativas_login  Int
   reactivation_code String? 
-  created_at        DateTime
+  created_at        DateTime      @default(now())
   updated_at        DateTime
   contas            Conta[]
   recebimentos      RecebimentosPreDefinidos[]
@@ -76,7 +76,7 @@ model Endereco {
   bairro       String
   cidade       String
   uf           String
-  created_at   DateTime
+  created_at   DateTime     @default(now())
   updated_at   DateTime
 }
 
@@ -89,7 +89,7 @@ model Conta {
   transactionPassword  String  
   saldo             Float
   status            ContaStatus
-  created_at        DateTime
+  created_at        DateTime      @default(now())
   updated_at        DateTime
   transacoesOrigem  Transacao[]    @relation("TransacaoContaOrigem")
   transacoesDestino Transacao[]    @relation("TransacaoContaDestino")
@@ -109,7 +109,7 @@ model Transacao {
   recebimento_pre_definido   RecebimentosPreDefinidos? @relation(fields: [recebimento_pre_definido_id], references: [id])
   descricao_categoria        String?
   data_agendada              DateTime?
-  created_at                 DateTime
+  created_at                 DateTime         @default(now())
   updated_at                 DateTime
 }
 
@@ -126,5 +126,12 @@ model RecebimentosPreDefinidos {
   dia_mes               Int?
   status                RecebimentoStatus
   transacoes            Transacao[]
-  created_at            DateTime
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+}
+
+model Newsletter {
+  id         String    @id @default(uuid())
+  email      String    @unique
+  created_at DateTime  @default(now())
 }

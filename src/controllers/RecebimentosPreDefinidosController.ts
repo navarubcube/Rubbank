@@ -1,7 +1,6 @@
 // src/controllers/RecebimentosPreDefinidosController.ts
 
 import { Request, Response } from "express";
-import { RecebimentosPreDefinidosIn, RecebimentosPreDefinidosOut } from "dtos/RecebimentosPreDefinidosDTO";
 import RecebimentosPreDefinidosModel from "models/RecebimentosPreDefinidosModel";
 
 const recebimentosPreDefinidosModel = new RecebimentosPreDefinidosModel();
@@ -9,94 +8,76 @@ const recebimentosPreDefinidosModel = new RecebimentosPreDefinidosModel();
 export default class RecebimentosPreDefinidosController {
   create = async (req: Request, res: Response) => {
     try {
-      const recebimentoPreDefinido: RecebimentosPreDefinidosIn = req.body;
-      const newRecebimentoPreDefinido: RecebimentosPreDefinidosOut = await recebimentosPreDefinidosModel.create(
-        recebimentoPreDefinido
-      );
-      res.status(201).json(newRecebimentoPreDefinido);
-    } catch (e) {
-      console.log("Failed to create recebimento predefinido", e);
-      res.status(500).send({
-        error: "RCPD-01",
-        message: "Failed to create recebimento predefinido",
-      });
+      if (!req.userId) {
+        return res.status(401).json({ message: "User is not authenticated" });
+      }
+  
+      const newRecebimento = await recebimentosPreDefinidosModel.create(req.body, req.userId);
+  
+      res.status(201).json(newRecebimento);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   };
+  
 
   get = async (req: Request, res: Response) => {
     try {
-      const id: number = parseInt(req.params.id);
-      const recebimentoPreDefinido: RecebimentosPreDefinidosOut | null = await recebimentosPreDefinidosModel.get(
-        id
-      );
-
-      if (recebimentoPreDefinido) {
-        res.status(200).json(recebimentoPreDefinido);
-      } else {
-        res.status(404).json({
-          error: "RCPD-06",
-          message: "Recebimento predefinido not found.",
-        });
+      const id = req.params.id;
+      const recebimento = await recebimentosPreDefinidosModel.get(id);
+      if (!recebimento) {
+        return res.status(404).json({ message: "Recebimento not found" });
       }
-    } catch (e) {
-      console.log("Failed to get recebimento predefinido", e);
-      res.status(500).send({
-        error: "RCPD-02",
-        message: "Failed to get recebimento predefinido",
-      });
+      res.json(recebimento);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   };
 
-  getAll = async (req: Request, res: Response) => {
+  getAll = async (_: Request, res: Response) => {
     try {
-      const recebimentosPreDefinidos: RecebimentosPreDefinidosOut[] | null = await recebimentosPreDefinidosModel.getAll();
-      res.status(200).json(recebimentosPreDefinidos);
-    } catch (e) {
-      console.log("Failed to get all recebimentos predefinidos", e);
-      res.status(500).send({
-        error: "RCPD-03",
-        message: "Failed to get all recebimentos predefinidos",
-      });
+      const recebimentos = await recebimentosPreDefinidosModel.getAll();
+      res.json(recebimentos);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   };
 
   update = async (req: Request, res: Response) => {
     try {
-      const id: number = parseInt(req.params.id);
-      const recebimentoPreDefinidoToUpdate: RecebimentosPreDefinidosIn = req.body;
-      const recebimentoPreDefinidoUpdated: RecebimentosPreDefinidosOut | null = await recebimentosPreDefinidosModel.update(
-        id,
-        recebimentoPreDefinidoToUpdate
-      );
-
-      if (recebimentoPreDefinidoUpdated) {
-        res.status(200).json(recebimentoPreDefinidoUpdated);
-      } else {
-        res.status(404).json({
-          error: "RCPD-06",
-          message: "Recebimento predefinido não encontrado.",
-        });
+      const id = req.params.id;
+      const updatedRecebimento = await recebimentosPreDefinidosModel.update(id, req.body);
+      if (!updatedRecebimento) {
+        return res.status(404).json({ message: "Recebimento not found" });
       }
-    } catch (e) {
-      console.log("Failed to update recebimento predefinido", e);
-      res.status(500).send({
-        error: "RCPD-04",
-        message: "Failed to update recebimento predefinido",
-      });
+      res.json(updatedRecebimento);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   };
 
   delete = async (req: Request, res: Response) => {
     try {
-      const id: number = parseInt(req.params.id);
-      const recebimentoPreDefinidoDeleted = await recebimentosPreDefinidosModel.delete(id);
-      res.status(204).json(recebimentoPreDefinidoDeleted);
-    } catch (e) {
-      console.log("Failed to delete recebimento predefinido", e);
-      res.status(500).send({
-        error: "RCPD-05",
-        message: "Failed to delete recebimento predefinido",
-      });
+      const id = req.params.id;
+      const wasDeleted = await recebimentosPreDefinidosModel.delete(id);
+      if (!wasDeleted) {
+        return res.status(404).json({ message: "Recebimento not found" });
+      }
+      res.status(204).send();
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  getByContaDestino = async (req: Request, res: Response) => {
+    try {
+      const contaDestinoId = req.params.contaDestinoId;
+      const recebimentos = await recebimentosPreDefinidosModel.getByContaDestino(contaDestinoId);
+      res.json(recebimentos);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   };
 }
+
+
