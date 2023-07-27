@@ -22,9 +22,11 @@ export default class ContaController {
       const accountDetails = await contaModel.getDetailsByUserId(userId);
   
       const response = {
+        id_conta: accountDetails.id, 
         agencia: accountDetails.agencia,
         numero_conta: accountDetails.numero_conta,
         usuario: {
+          id: accountDetails.usuario.id,
           nome_completo: accountDetails.usuario.nome_completo,
           email: accountDetails.usuario.email,
           telefone: accountDetails.usuario.telefone,
@@ -139,6 +141,7 @@ export default class ContaController {
 
       // Criando o objeto resposta
       const response = {
+        id_conta: account.id,
         nome_usuario: account.usuario.nome_completo,
         usuario_id: account.usuario_id,
         agencia: account.agencia,
